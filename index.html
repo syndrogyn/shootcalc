@@ -723,18 +723,46 @@
 
       document.getElementById('cameraList').innerHTML = cameraHtml;
 
-      // Recommendations - only GRAID Shuttle8s (always 2 units)
+      // Recommendations - SSD Shuttles (primary), 2× GRAID (backup/redundancy)
+      const shuttleCount = Math.ceil(rawTB / 16);
+      const shuttlePrice = shuttleCount * specs.prices.shuttle16;
+      
       const graidPrice = graidCount * specs.prices[`graid${state.graidSize}`];
-      const totalCost = graidPrice;
+      
+      const totalCost = shuttlePrice + graidPrice;
 
       const recsHtml = `
         <div class="rec-item">
           <div class="rec-header">
             <div class="rec-info">
-              <h3>GRAID SHUTTLE8 (${state.graidSize}TB)</h3>
-              <div class="calc-detail">${redundantTB.toFixed(2)} TB ÷ ${state.graidSize} TB/drive = 2 drives (2x redundancy)</div>
+              <h3>${shuttleCount}× 16TB SSD Shuttles</h3>
+              <div class="calc-detail">${rawTB.toFixed(2)} TB ÷ 16 TB/drive = ${shuttleCount} drives (primary storage)</div>
             </div>
-            <div class="rec-badge">GRAID</div>
+            <div class="rec-badge">Primary</div>
+          </div>
+          <div class="rec-stats">
+            <div class="rec-stat">
+              <div class="rec-stat-value">${(shuttleCount * 16).toLocaleString()}</div>
+              <div class="rec-stat-label">Total TB</div>
+            </div>
+            <div class="rec-stat">
+              <div class="rec-stat-value">$${shuttlePrice.toLocaleString()}</div>
+              <div class="rec-stat-label">Est. Cost</div>
+            </div>
+          </div>
+          <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <a href="https://eshop.macsales.com/item/OWC/TB5ULT4M2/" target="_blank" style="font-size: 0.85rem; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 0.4rem 0.75rem; border-radius: 4px; cursor: pointer;">OWC NVMe Enclosure</a>
+            <a href="https://www.bhphotovideo.com/c/product/1787633-REG/samsung_mz_v9p4t0b_am_4tb_non_hs_990.html/?ap=y&ap=y&smp=y&smp=y&store=420&lsft=BI%3A6879&gad_source=1&gad_campaignid=21413748680&gbraid=0AAAAAD7yMh3ZW6xovRXMr23dKFynWYphk&gclid=CjwKCAjwwrPVBhA1EiwAv_YO-TvYJASQ9TVyX4PIwTvtQN0S_o8bvjb2BmlR7qUPkcdo_CeQuqXoRhoCc_0QAvD_BwE" target="_blank" style="font-size: 0.85rem; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 0.4rem 0.75rem; border-radius: 4px; cursor: pointer;">Samsung 990 PRO</a>
+          </div>
+        </div>
+
+        <div class="rec-item">
+          <div class="rec-header">
+            <div class="rec-info">
+              <h3>2× GRAID SHUTTLE8 (${state.graidSize}TB)</h3>
+              <div class="calc-detail">2× ${state.graidSize}TB = ${state.graidSize * 2}TB (backup/redundancy)</div>
+            </div>
+            <div class="rec-badge">Backup</div>
           </div>
           <div class="rec-stats">
             <div class="rec-stat">
@@ -754,11 +782,12 @@
         <div class="rec-item" style="background: var(--bg-1); border: 2px solid var(--accent); color: var(--text-1);">
           <div class="rec-header">
             <div class="rec-info">
-              <h3 style="color: var(--text-1);">Total Cost</h3>
+              <h3 style="color: var(--text-1);">Total Setup Cost</h3>
             </div>
           </div>
           <div style="padding: 1rem;">
             <div style="font-size: 1.8rem; font-weight: 700; color: var(--accent); text-align: center;">$${totalCost.toLocaleString()}</div>
+            <div style="font-size: 0.9rem; color: var(--text-2); text-align: center; margin-top: 0.5rem;">${shuttleCount}× Shuttles + 2× GRAID (${state.graidSize}TB each)</div>
           </div>
         </div>
       `;
