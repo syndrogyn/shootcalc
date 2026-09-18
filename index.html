@@ -517,19 +517,19 @@
         '4k-4096': '4K DCI',
       },
       bitrates: {
-        // 5.7K 16:9 (8K sensor option)
-        '57k-169': {
-          'xocn-xt': { venice2: 180 },
-          'xocn-st': { venice2: 150 },
-          'xocn-lt': { venice2: 105 },
-          'aprores': { venice2: 130 },
-        },
-        // 3.8K 16:9 (NEW DEFAULT for 6K sensor)
+        // 3.8K 16:9 (NEW DEFAULT for 6K sensor) - from chart: 965, 661, 389 Mbps
         '38k-169': {
-          'xocn-xt': { venice2: 965 },
-          'xocn-st': { venice2: 661 },
-          'xocn-lt': { venice2: 389 },
-          'aprores': { venice2: 754 },
+          'xocn-xt': { venice2: 120.625 },
+          'xocn-st': { venice2: 82.625 },
+          'xocn-lt': { venice2: 48.625 },
+          'aprores': { venice2: 94.25 },
+        },
+        // 5.7K 16:9 (8K sensor option) - from chart: 2091, 1431, 843 Mbps
+        '57k-169': {
+          'xocn-xt': { venice2: 261.375 },
+          'xocn-st': { venice2: 178.875 },
+          'xocn-lt': { venice2: 105.375 },
+          'aprores': { venice2: 130 },
         },
         // Venice 2 X-OCN bitrates
         '8k-32': {
@@ -677,9 +677,10 @@
         `${videoTB.toFixed(2)} TB video${audioDisplay} (${hoursDetail} × ${state.shootingDays} days)`;
 
       // Auto-select GRAID size based on redundant footprint - always use 2 drives
-      if (redundantTB <= 48) {
+      // 2x48 = 96TB, 2x96 = 192TB, 2x160 = 320TB
+      if (redundantTB <= 96) {
         state.graidSize = 48;
-      } else if (redundantTB <= 96) {
+      } else if (redundantTB <= 192) {
         state.graidSize = 96;
       } else {
         state.graidSize = 160;
@@ -908,6 +909,10 @@
 
       // Use browser's print dialog with HTML links
       const printWindow = window.open('', '', 'height=600,width=800');
+      if (!printWindow) {
+        alert('Unable to open print window. Please check your browser settings and try again.');
+        return;
+      }
       printWindow.document.write(`
         <html>
           <head>
