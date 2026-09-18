@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -461,16 +462,8 @@
     <div class="card">
       <div class="card-title">Storage needed</div>
       <div class="metric">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-          <div>
-            <div class="metric-label">Raw footage</div>
-            <div class="metric-value"><span id="rawValue">0</span> TB</div>
-          </div>
-          <div>
-            <div class="metric-label">With 2x redundancy</div>
-            <div class="metric-value"><span id="redundantValue">0</span> TB</div>
-          </div>
-        </div>
+        <div class="metric-label">Total footprint</div>
+        <div class="metric-value"><span id="rawValue">0</span> TB</div>
         <div class="calc-detail" id="rawCalc"></div>
         <div class="calc-detail" id="redundantCalc"></div>
       </div>
@@ -595,10 +588,9 @@
       },
       prices: {
         shuttle16: 4850,
-        graid32: 9500,
-        graid64: 16500,
-        graid96: 24000,
-        graid160: 32000,
+        graid48: 6989.99,
+        graid96: 9819.99,
+        graid160: 10239.99,
       }
     };
 
@@ -656,14 +648,13 @@
       document.getElementById('daysValue').textContent = state.shootingDays;
       document.getElementById('daysSlider').value = state.shootingDays;
       document.getElementById('rawValue').textContent = rawTB.toFixed(2);
-      document.getElementById('redundantValue').textContent = redundantTB.toFixed(2);
 
       // Camera breakdown - show mixer status
       const cameraCalcs = state.cameras.map(cam => {
         const letter = getLetter(cam.id);
         const videoTbNeeded = calcCameraStorage(cam).toFixed(3);
         const audioTbNeeded = calcAudioStorage(cam).toFixed(3);
-        const mbps = specs.bitrates[cam.resolution][cam.codec][cam.type];
+        const mbps = specs.bitrates[cam.resolution]?.[cam.codec]?.[cam.type] || 'N/A';
         const codecName = specs.codecNames[cam.codec];
         const resName = specs.resolutions[cam.resolution];
         const audioStr = cam.hasMixer ? `+ ${audioTbNeeded} TB audio` : '(no mixer)';
@@ -677,9 +668,19 @@
       document.getElementById('rawCalc').textContent = 
         `${videoTB.toFixed(2)} TB video${audioDisplay} (${hoursDetail} × ${state.shootingDays} days)`;
 
-      // Redundant calc
+      // Auto-select GRAID size based on redundant footprint - always use 2 drives
+      if (redundantTB <= 48) {
+        state.graidSize = 48;
+      } else if (redundantTB <= 96) {
+        state.graidSize = 96;
+      } else {
+        state.graidSize = 160;
+      }
+
+      // Redundant calc - show breakdown with 2x
+      const graidCount = 2; // Always 2 Shuttle8s
       document.getElementById('redundantCalc').textContent = 
-        `${rawTB.toFixed(2)} TB (raw) × 2 (GRAID redundancy)`;
+        `${rawTB.toFixed(2)} TB (raw) × 2 (redundancy) = ${redundantTB.toFixed(2)} TB → 2× ${state.graidSize}TB GRAID`;
 
       // Render cameras - with columns for camera, type, resolution, codec, hours, mixer, delete
       const cameraHtml = state.cameras.map(cam => {
@@ -722,58 +723,22 @@
 
       document.getElementById('cameraList').innerHTML = cameraHtml;
 
-      // Recommendations
-      const shuttleCount = Math.ceil(rawTB / 16);
-      const shuttlePrice = shuttleCount * specs.prices.shuttle16;
-
-      const graidCount = Math.ceil(redundantTB / state.graidSize);
+      // Recommendations - only GRAID Shuttle8s (always 2 units)
       const graidPrice = graidCount * specs.prices[`graid${state.graidSize}`];
+      const totalCost = graidPrice;
 
       const recsHtml = `
         <div class="rec-item">
           <div class="rec-header">
             <div class="rec-info">
-              <h3>${shuttleCount}× 16TB SSD Shuttles</h3>
-              <div class="calc-detail">${rawTB.toFixed(2)} TB ÷ 16 TB/drive = ${shuttleCount} drives</div>
-            </div>
-            <div class="rec-badge">Shuttle</div>
-          </div>
-          <div class="rec-stats">
-            <div class="rec-stat">
-              <div class="rec-stat-value">${(shuttleCount * 16).toLocaleString()}</div>
-              <div class="rec-stat-label">Total TB</div>
-            </div>
-            <div class="rec-stat">
-              <div class="rec-stat-value">$${shuttlePrice.toLocaleString()}</div>
-              <div class="rec-stat-label">Est. Cost</div>
-            </div>
-          </div>
-          <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <a href="https://eshop.macsales.com/item/OWC/TB5ULT4M2/" target="_blank" style="font-size: 0.85rem; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 0.4rem 0.75rem; border-radius: 4px; cursor: pointer;">OWC NVMe Enclosure</a>
-            <a href="https://www.amazon.com/Samsung-990-PRO-Solid-State/s?k=Samsung+990+PRO" target="_blank" style="font-size: 0.85rem; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 0.4rem 0.75rem; border-radius: 4px; cursor: pointer;">Samsung 990 PRO</a>
-          </div>
-        </div>
-
-        <div class="rec-item">
-          <div class="rec-header">
-            <div class="rec-info">
-              <h3>GRAID SHUTTLE8</h3>
-              <div class="graid-controls">
-                <label>Size:</label>
-                <select onchange="updateGRAIDSize(this.value)">
-                  <option value="32" ${state.graidSize === 32 ? 'selected' : ''}>32TB</option>
-                  <option value="64" ${state.graidSize === 64 ? 'selected' : ''}>64TB</option>
-                  <option value="96" ${state.graidSize === 96 ? 'selected' : ''}>96TB</option>
-                  <option value="160" ${state.graidSize === 160 ? 'selected' : ''}>160TB</option>
-                </select>
-              </div>
-              <div class="calc-detail">${redundantTB.toFixed(2)} TB ÷ ${state.graidSize} TB/drive = ${graidCount} drives (2x redundancy)</div>
+              <h3>GRAID SHUTTLE8 (${state.graidSize}TB)</h3>
+              <div class="calc-detail">${redundantTB.toFixed(2)} TB ÷ ${state.graidSize} TB/drive = 2 drives (2x redundancy)</div>
             </div>
             <div class="rec-badge">GRAID</div>
           </div>
           <div class="rec-stats">
             <div class="rec-stat">
-              <div class="rec-stat-value">${graidCount}× ${state.graidSize}TB</div>
+              <div class="rec-stat-value">2× ${state.graidSize}TB</div>
               <div class="rec-stat-label">Configuration</div>
             </div>
             <div class="rec-stat">
@@ -783,6 +748,17 @@
           </div>
           <div style="margin-top: 0.75rem;">
             <a href="https://www.bhphotovideo.com/c/product/1956829-REG/g_drive_sdph48h_160t_nbaab_g_raid_shuttle_8_160tb.html" target="_blank" style="font-size: 0.85rem; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 0.4rem 0.75rem; border-radius: 4px; cursor: pointer;">B&H Photo</a>
+          </div>
+        </div>
+
+        <div class="rec-item" style="background: var(--bg-1); border: 2px solid var(--accent); color: var(--text-1);">
+          <div class="rec-header">
+            <div class="rec-info">
+              <h3 style="color: var(--text-1);">Total Cost</h3>
+            </div>
+          </div>
+          <div style="padding: 1rem;">
+            <div style="font-size: 1.8rem; font-weight: 700; color: var(--accent); text-align: center;">$${totalCost.toLocaleString()}</div>
           </div>
         </div>
       `;
@@ -882,7 +858,7 @@
       htmlSummary += '<h2>RECOMMENDED SOLUTIONS</h2>\n';
       const shuttleCount = Math.ceil(rawTB / 16);
       htmlSummary += `<p><strong>Shuttles (16TB each):</strong> ${shuttleCount} drives = ${shuttleCount * 16}TB total ($${(shuttleCount * specs.prices.shuttle16).toLocaleString()})<br/>`;
-      htmlSummary += `<a href="https://eshop.macsales.com/item/OWC/TB5ULT4M2/" target="_blank">OWC NVMe Enclosure</a> | <a href="https://www.amazon.com/Samsung-990-PRO-Solid-State/s?k=Samsung+990+PRO" target="_blank">Samsung 990 PRO</a></p>\n\n`;
+      htmlSummary += `<a href="https://eshop.macsales.com/item/OWC/TB5ULT4M2/" target="_blank">OWC NVMe Enclosure</a> | <a href="https://www.bhphotovideo.com/c/product/1787633-REG/samsung_mz_v9p4t0b_am_4tb_non_hs_990.html/?ap=y&ap=y&smp=y&smp=y&store=420&lsft=BI%3A6879&gad_source=1&gad_campaignid=21413748680&gbraid=0AAAAAD7yMh3ZW6xovRXMr23dKFynWYphk&gclid=CjwKCAjwwrPVBhA1EiwAv_YO-TvYJASQ9TVyX4PIwTvtQN0S_o8bvjb2BmlR7qUPkcdo_CeQuqXoRhoCc_0QAvD_BwE" target="_blank">Samsung 990 PRO</a></p>\n\n`;
       
       const graidCount = Math.ceil(redundantTB / state.graidSize);
       const graidPrice = graidCount * specs.prices[`graid${state.graidSize}`];
