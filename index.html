@@ -782,12 +782,12 @@
         <div class="rec-item" style="background: var(--bg-1); border: 2px solid var(--accent); color: var(--text-1);">
           <div class="rec-header">
             <div class="rec-info">
-              <h3 style="color: var(--text-1);">Total Setup Cost</h3>
+              <h3 style="color: var(--text-1);">TOTAL DRIVE STORAGE COST</h3>
             </div>
           </div>
           <div style="padding: 1rem;">
             <div style="font-size: 1.8rem; font-weight: 700; color: var(--accent); text-align: center;">$${totalCost.toLocaleString()}</div>
-            <div style="font-size: 0.9rem; color: var(--text-2); text-align: center; margin-top: 0.5rem;">${shuttleCount}× Shuttles + 2× GRAID (${state.graidSize}TB each)</div>
+            <div style="font-size: 0.9rem; color: var(--text-2); text-align: center; margin-top: 0.5rem;">${shuttleCount}× 16TB Shuttles + 2× ${state.graidSize}TB GRAID</div>
           </div>
         </div>
       `;
@@ -886,13 +886,17 @@
 
       htmlSummary += '<h2>RECOMMENDED SOLUTIONS</h2>\n';
       const shuttleCount = Math.ceil(rawTB / 16);
-      htmlSummary += `<p><strong>Shuttles (16TB each):</strong> ${shuttleCount} drives = ${shuttleCount * 16}TB total ($${(shuttleCount * specs.prices.shuttle16).toLocaleString()})<br/>`;
+      const shuttlePrice = shuttleCount * specs.prices.shuttle16;
+      htmlSummary += `<p><strong>SSD Shuttles (16TB each):</strong> ${shuttleCount} drives = ${shuttleCount * 16}TB total ($${shuttlePrice.toLocaleString()})<br/>`;
       htmlSummary += `<a href="https://eshop.macsales.com/item/OWC/TB5ULT4M2/" target="_blank">OWC NVMe Enclosure</a> | <a href="https://www.bhphotovideo.com/c/product/1787633-REG/samsung_mz_v9p4t0b_am_4tb_non_hs_990.html/?ap=y&ap=y&smp=y&smp=y&store=420&lsft=BI%3A6879&gad_source=1&gad_campaignid=21413748680&gbraid=0AAAAAD7yMh3ZW6xovRXMr23dKFynWYphk&gclid=CjwKCAjwwrPVBhA1EiwAv_YO-TvYJASQ9TVyX4PIwTvtQN0S_o8bvjb2BmlR7qUPkcdo_CeQuqXoRhoCc_0QAvD_BwE" target="_blank">Samsung 990 PRO</a></p>\n\n`;
       
-      const graidCount = Math.ceil(redundantTB / state.graidSize);
-      const graidPrice = graidCount * specs.prices[`graid${state.graidSize}`];
-      htmlSummary += `<p><strong>GRAID ${state.graidSize}TB:</strong> ${graidCount} drives ($${graidPrice.toLocaleString()})<br/>`;
-      htmlSummary += `<a href="https://www.bhphotovideo.com/c/product/1956829-REG/g_drive_sdph48h_160t_nbaab_g_raid_shuttle_8_160tb.html" target="_blank">B&H Photo</a></p>`;
+      const graidPrice = 2 * specs.prices[`graid${state.graidSize}`];
+      htmlSummary += `<p><strong>2× GRAID SHUTTLE8 (${state.graidSize}TB):</strong> 2 drives ($${graidPrice.toLocaleString()})<br/>`;
+      htmlSummary += `<a href="https://www.bhphotovideo.com/c/product/1956829-REG/g_drive_sdph48h_160t_nbaab_g_raid_shuttle_8_160tb.html" target="_blank">B&H Photo</a></p>\n\n`;
+      
+      const totalCost = shuttlePrice + graidPrice;
+      htmlSummary += `<p><strong>TOTAL DRIVE STORAGE COST:</strong> $${totalCost.toLocaleString()}<br/>`;
+      htmlSummary += `(${shuttleCount}× 16TB Shuttles + 2× ${state.graidSize}TB GRAID)</p>`;
 
       // Use browser's print dialog with HTML links
       const printWindow = window.open('', '', 'height=600,width=800');
