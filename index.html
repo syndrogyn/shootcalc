@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OPP Shoot Footprint Calc</title>
+  <title>Shoot Footprint Calculator</title>
   <style>
     * {
       margin: 0;
@@ -497,12 +497,13 @@
       },
       // Resolutions per camera type (4K and above only for Sony)
       resolutionsByCamera: {
-        venice2: ['57k-169', '8k-32', '8k-179', '82k-179', '81k-169', '76k-169', '58k-65', '58k-43', '58k-179', '54k-169'],
+        venice2: ['57k-169', '38k-169', '8k-32', '8k-179', '82k-179', '81k-169', '76k-169', '58k-65', '58k-43', '58k-179', '54k-169'],
         fx9: ['4k-3840', '4k-4096'],
         fx6: ['4k-3840', '4k-4096'],
       },
       resolutions: {
         '57k-169': '5.7K 16:9',
+        '38k-169': '3.8K 16:9',
         '8k-32': '8.6K 3:2',
         '8k-179': '8.6K 17:9',
         '82k-179': '8.2K 17:9',
@@ -516,12 +517,19 @@
         '4k-4096': '4K DCI',
       },
       bitrates: {
-        // 5.7K 16:9 (NEW DEFAULT)
+        // 5.7K 16:9 (8K sensor option)
         '57k-169': {
           'xocn-xt': { venice2: 180 },
           'xocn-st': { venice2: 150 },
           'xocn-lt': { venice2: 105 },
           'aprores': { venice2: 130 },
+        },
+        // 3.8K 16:9 (NEW DEFAULT for 6K sensor)
+        '38k-169': {
+          'xocn-xt': { venice2: 965 },
+          'xocn-st': { venice2: 661 },
+          'xocn-lt': { venice2: 389 },
+          'aprores': { venice2: 754 },
         },
         // Venice 2 X-OCN bitrates
         '8k-32': {
@@ -599,7 +607,7 @@
       nextId: 3,
       graidSize: 64,
       cameras: [
-        { id: 1, type: 'venice2', resolution: '57k-169', codec: 'xocn-lt', hoursPerDay: 6, hasMixer: true },
+        { id: 1, type: 'venice2', resolution: '38k-169', codec: 'xocn-lt', hoursPerDay: 6, hasMixer: true },
         { id: 2, type: 'fx9', resolution: '4k-3840', codec: 'xavc-i', hoursPerDay: 6, hasMixer: false },
       ]
     };
@@ -827,7 +835,7 @@
       state.cameras.push({
         id: state.nextId++,
         type: 'venice2',
-        resolution: '57k-169',
+        resolution: '38k-169',
         codec: 'xocn-lt',
         hoursPerDay: 6,
         hasMixer: true,
