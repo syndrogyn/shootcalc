@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shoot Footprint Calculator</title>
+  <title>One Potato Productiosn - Shoot Footprint Calc</title>
   <style>
     * {
       margin: 0;
@@ -860,7 +860,7 @@
       let summary = 'OPP SHOOT FOOTPRINT CALC\n\n';
       summary += `SHOOT DURATION: ${state.shootingDays} days\n\n`;
       
-      let htmlSummary = '<h1>OPP SHOOT FOOTPRINT CALC</h1>\n';
+      let htmlSummary = '';
       htmlSummary += `<p><strong>SHOOT DURATION:</strong> ${state.shootingDays} days</p>\n\n`;
       
       htmlSummary += '<h2>CAMERAS</h2>\n';
@@ -905,11 +905,17 @@
           <head>
             <title>OPP Shoot Footprint</title>
             <style>
-              body { font-family: Arial, sans-serif; padding: 2rem; line-height: 1.8; background: white; color: black; }
-              h1 { font-size: 28px; margin-bottom: 1.5rem; }
-              h2 { font-size: 18px; margin-top: 1.5rem; margin-bottom: 0.75rem; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
-              p { margin: 0.5rem 0; }
-              a { color: #0066cc; text-decoration: underline; }
+              @page { margin: 0.5in; }
+              body { font-family: Arial, sans-serif; padding: 0; line-height: 1.8; background: #1a1a1a; color: #e0e0e0; }
+              h1 { font-size: 14px; margin-bottom: 0.75rem; margin-top: 0; color: #00bfff; font-weight: 600; }
+              h2 { font-size: 16px; margin-top: 1.25rem; margin-bottom: 0.6rem; border-bottom: 1px solid #00bfff; padding-bottom: 0.4rem; color: #00bfff; }
+              p { margin: 0.4rem 0; }
+              a { color: #00bfff; text-decoration: underline; }
+              @media print { 
+                @page { margin: 0.5in; }
+                body { background: white; color: black; padding: 0; }
+                h1, h2, a { color: #333; }
+              }
             </style>
           </head>
           <body>
