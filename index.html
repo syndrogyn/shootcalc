@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shoot Footprint Calculator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-0: #ffffff;
+      --bg-1: #f5f5f5;
+      --bg-2: #e8e8e8;
+      --text-0: #000000;
+      --text-1: #333333;
+      --text-2: #666666;
+      --text-3: #999999;
+      --accent: #0066cc;
+      --accent-hover: #0052a3;
+      --border: #dddddd;
+    }
+
+    [data-theme="dark"] {
+      --bg-0: #0d0d0d;
+      --bg-1: #1a1a1a;
+      --bg-2: #252525;
+      --text-0: #ffffff;
+      --text-1: #e0e0e0;
+      --text-2: #b0b0b0;
+      --text-3: #808080;
+      --accent: #4d9fff;
+      --accent-hover: #3d8fff;
+      --border: #333333;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: var(--bg-1);
+      color: var(--text-1);
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .header {
+      background: var(--bg-0);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .header h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .theme-btn {
+      width: 44px;
+      height: 28px;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .theme-btn::after {
+      content: '🌙';
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      top: 2px;
+      left: 2px;
+      font-size: 14px;
+      transition: left 0.2s;
+    }
+
+    .theme-btn.dark::after {
+      content: '☀️';
+      left: 18px;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem;
+    }
+
+    .card {
+      background: var(--bg-0);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-2);
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .slider-row label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      min-width: 120px;
+      color: var(--text-1);
+    }
+
+    input[type="range"] {
+      flex: 1;
+      height: 5px;
+      border-radius: 3px;
+      background: var(--bg-2);
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      background: var(--accent-hover);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: none;
+      transition: background 0.2s;
+    }
+
+    input[type="range"]::-moz-range-thumb:hover {
+      background: var(--accent-hover);
+    }
+
+    .value-badge {
+      min-width: 50px;
+      text-align: right;
+      font-weight: 600;
+      color: var(--accent);
+      font-size: 0.95rem;
+    }
+
+    .camera-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .camera-row {
+      display: grid;
+      grid-template-columns: 40px 1fr 1fr 1fr auto;
+      gap: 0.75rem;
+      align-items: center;
+      background: var(--bg-1);
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .camera-label {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--accent);
+      text-align: center;
+    }
+
+    select {
+      background: var(--bg-0);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text-1);
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.1);
+    }
+
+    [data-theme="dark"] select:focus {
+      box-shadow: 0 0 0 2px rgba(77, 159, 255, 0.2);
+    }
+
+    .hours-input {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    input[type="range"].hours-slider {
+      width: 60px;
+      height: 4px;
+    }
+
+    .hours-value {
+      min-width: 35px;
+      text-align: right;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-2);
+      font-size: 1.1rem;
+      padding: 0;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+    }
+
+    .delete-btn:hover {
+      color: #d63031;
+    }
+
+    .add-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .add-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .calc-detail {
+      font-size: 0.8rem;
+      color: var(--text-3);
+      margin-top: 0.5rem;
+      line-height: 1.4;
+    }
+
+    .metric {
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .metric-label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-2);
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-align: left;
+    }
+
+    .recommendations {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .rec-item {
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .rec-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .rec-info h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-1);
+      margin-bottom: 0.25rem;
+    }
+
+    .rec-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .rec-stat {
+      background: var(--bg-0);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem;
+      text-align: center;
+    }
+
+    .rec-stat-value {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .rec-stat-label {
+      font-size: 0.75rem;
+      color: var(--text-3);
+    }
+
+    .rec-price {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--bg-0);
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .rec-badge {
+      background: var(--bg-2);
+      color: var(--text-1);
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+      border: 1px solid var(--border);
+    }
+
+    .graid-controls {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .graid-controls label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-1);
+    }
+
+    .graid-controls select {
+      flex: 1;
+      min-width: 100px;
+    }
+
+    @media (max-width: 600px) {
+      .camera-row {
+        grid-template-columns: 40px 1fr 1fr auto;
+        gap: 0.5rem;
+      }
+
+      .camera-row > div:nth-child(4) {
+        display: none;
+      }
+
+      .header {
+        padding: 1rem;
+      }
+
+      .container {
+        padding: 1rem;
+      }
+
+      .card {
+        padding: 1rem;
+      }
+
+      .rec-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>OPP SHOOT FOOTPRINT CALC</h1>
+    <div style="display: flex; gap: 1rem;">
+      <button id="exportBtn" style="padding: 0.5rem 1rem; background: var(--accent); color: var(--bg-1); border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Export PDF</button>
+      <button class="theme-btn" id="themeBtn"></button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <div class="card-title">Settings</div>
+      
+      <div class="slider-row">
+        <label>Shoot length</label>
+        <input type="range" id="daysSlider" min="1" max="100" value="5">
+        <span class="value-badge"><span id="daysValue">5</span> days</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>Cameras</span>
+        <button class="add-btn" onclick="addCamera()">+ Add</button>
+      </div>
+      <div class="camera-list" id="cameraList"></div>
+      <div class="calc-detail" id="cameraCalc"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Storage needed</div>
+      <div class="metric">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div>
+            <div class="metric-label">Raw footage</div>
+            <div class="metric-value"><span id="rawValue">0</span> TB</div>
+          </div>
+          <div>
+            <div class="metric-label">With 2x redundancy</div>
+            <div class="metric-value"><span id="redundantValue">0</span> TB</div>
+          </div>
+        </div>
+        <div class="calc-detail" id="rawCalc"></div>
+        <div class="calc-detail" id="redundantCalc"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Recommended drive storage</div>
+      <div class="recommendations" id="recs"></div>
+    </div>
+  </div>
+
+  <script>
+    const specs = {
+      cameras: {
+        venice2: 'Venice 2',
+        fx9: 'FX9',
+        fx6: 'FX6',
+      },
+      // Codecs per camera type
+      codecsByCamera: {
+        venice2: ['xocn-lt', 'xocn-st', 'xocn-xt', 'aprores'],
+        fx9: ['xavc-i'],
+        fx6: ['xavc-i'],
+      },
+      codecNames: {
+        'xocn-xt': 'X-OCN XT',
+        'xocn-st': 'X-OCN ST',
+        'xocn-lt': 'X-OCN LT',
+        'aprores': 'Apple ProRes',
+        'xavc-i': 'XAVC-I',
+      },
+      // Resolutions per camera type (4K and above only for Sony)
+      resolutionsByCamera: {
+        venice2: ['57k-169', '8k-32', '8k-179', '82k-179', '81k-169', '76k-169', '58k-65', '58k-43', '58k-179', '54k-169'],
+        fx9: ['4k-3840', '4k-4096'],
+        fx6: ['4k-3840', '4k-4096'],
+      },
+      resolutions: {
+        '57k-169': '5.7K 16:9',
+        '8k-32': '8.6K 3:2',
+        '8k-179': '8.6K 17:9',
+        '82k-179': '8.2K 17:9',
+        '81k-169': '8.1K 16:9',
+        '76k-169': '7.6K 16:9',
+        '58k-65': '5.8K 6:5',
+        '58k-43': '5.8K 4:3',
+        '58k-179': '5.8K 17:9',
+        '54k-169': '5.4K 16:9',
+        '4k-3840': '4K UHD',
+        '4k-4096': '4K DCI',
+      },
+      bitrates: {
+        // 5.7K 16:9 (NEW DEFAULT)
+        '57k-169': {
+          'xocn-xt': { venice2: 180 },
+          'xocn-st': { venice2: 150 },
+          'xocn-lt': { venice2: 105 },
+          'aprores': { venice2: 130 },
+        },
+        // Venice 2 X-OCN bitrates
+        '8k-32': {
+          'xocn-xt': { venice2: 530 },
+          'xocn-st': { venice2: 380 },
+          'xocn-lt': { venice2: 220 },
+          'aprores': { venice2: 250 },
+        },
+        '8k-179': {
+          'xocn-xt': { venice2: 530 },
+          'xocn-st': { venice2: 380 },
+          'xocn-lt': { venice2: 220 },
+          'aprores': { venice2: 250 },
+        },
+        '82k-179': {
+          'xocn-xt': { venice2: 510 },
+          'xocn-st': { venice2: 365 },
+          'xocn-lt': { venice2: 210 },
+          'aprores': { venice2: 240 },
+        },
+        '81k-169': {
+          'xocn-xt': { venice2: 530 },
+          'xocn-st': { venice2: 380 },
+          'xocn-lt': { venice2: 220 },
+          'aprores': { venice2: 250 },
+        },
+        '76k-169': {
+          'xocn-xt': { venice2: 510 },
+          'xocn-st': { venice2: 365 },
+          'xocn-lt': { venice2: 210 },
+          'aprores': { venice2: 240 },
+        },
+        '58k-65': {
+          'xocn-xt': { venice2: 420 },
+          'xocn-st': { venice2: 300 },
+          'xocn-lt': { venice2: 175 },
+          'aprores': { venice2: 190 },
+        },
+        '58k-43': {
+          'xocn-xt': { venice2: 380 },
+          'xocn-st': { venice2: 270 },
+          'xocn-lt': { venice2: 160 },
+          'aprores': { venice2: 170 },
+        },
+        '58k-179': {
+          'xocn-xt': { venice2: 510 },
+          'xocn-st': { venice2: 365 },
+          'xocn-lt': { venice2: 210 },
+          'aprores': { venice2: 240 },
+        },
+        '54k-169': {
+          'xocn-xt': { venice2: 510 },
+          'xocn-st': { venice2: 365 },
+          'xocn-lt': { venice2: 210 },
+          'aprores': { venice2: 240 },
+        },
+        // Sony FX6/FX9 XAVC-I bitrates (480 Mbps = 60 MB/s)
+        '4k-3840': {
+          'xavc-i': { fx9: 60, fx6: 60 },
+        },
+        '4k-4096': {
+          'xavc-i': { fx9: 60, fx6: 60 },
+        },
+      },
+      prices: {
+        shuttle16: 4850,
+        graid32: 9500,
+        graid64: 16500,
+        graid96: 24000,
+        graid160: 32000,
+      }
+    };
+
+    let state = {
+      shootingDays: 5,
+      nextId: 3,
+      graidSize: 64,
+      cameras: [
+        { id: 1, type: 'venice2', resolution: '57k-169', codec: 'xocn-lt', hoursPerDay: 6, hasMixer: true },
+        { id: 2, type: 'fx9', resolution: '4k-3840', codec: 'xavc-i', hoursPerDay: 6, hasMixer: false },
+      ]
+    };
+
+    function getLetter(id) {
+      return String.fromCharCode(65 + state.cameras.findIndex(c => c.id === id));
+    }
+
+    function calcCameraStorage(cam) {
+      const bitrate = specs.bitrates[cam.resolution]?.[cam.codec]?.[cam.type];
+      if (!bitrate) {
+        console.warn(`No bitrate found for ${cam.type} ${cam.resolution} ${cam.codec}`, specs.bitrates[cam.resolution]);
+        return 0;
+      }
+      const totalSeconds = state.shootingDays * cam.hoursPerDay * 3600;
+      const totalGB = (bitrate * totalSeconds) / 1024;
+      return totalGB / 1024; // Convert to TB
+    }
+
+    function calcAudioStorage(cam) {
+      // 8 tracks × 24-bit (3 bytes) × 48kHz = 1.152 MB/sec per camera (only if mixer present)
+      if (!cam.hasMixer) return 0;
+      const audioMbps = 1.152;
+      const totalSeconds = state.shootingDays * cam.hoursPerDay * 3600;
+      const totalGB = (audioMbps * totalSeconds) / 1024;
+      return totalGB / 1024;
+    }
+
+    function calcStorage() {
+      let videoGB = 0;
+      let audioGB = 0;
+      state.cameras.forEach(cam => {
+        videoGB += calcCameraStorage(cam) * 1024; // Convert TB to GB
+        audioGB += calcAudioStorage(cam) * 1024;  // Convert TB to GB
+      });
+      return { videoGB, audioGB, totalGB: videoGB + audioGB };
+    }
+
+    function render() {
+      const storage = calcStorage();
+      const videoTB = storage.videoGB / 1024;
+      const audioTB = storage.audioGB / 1024;
+      const rawTB = storage.totalGB / 1024;
+      const redundantTB = rawTB * 2;
+
+      document.getElementById('daysValue').textContent = state.shootingDays;
+      document.getElementById('daysSlider').value = state.shootingDays;
+      document.getElementById('rawValue').textContent = rawTB.toFixed(2);
+      document.getElementById('redundantValue').textContent = redundantTB.toFixed(2);
+
+      // Camera breakdown - show mixer status
+      const cameraCalcs = state.cameras.map(cam => {
+        const letter = getLetter(cam.id);
+        const videoTbNeeded = calcCameraStorage(cam).toFixed(3);
+        const audioTbNeeded = calcAudioStorage(cam).toFixed(3);
+        const mbps = specs.bitrates[cam.resolution][cam.codec][cam.type];
+        const codecName = specs.codecNames[cam.codec];
+        const resName = specs.resolutions[cam.resolution];
+        const audioStr = cam.hasMixer ? `+ ${audioTbNeeded} TB audio` : '(no mixer)';
+        return `Camera ${letter}: ${videoTbNeeded} TB video ${audioStr} (${specs.cameras[cam.type]} ${resName} @ ${codecName}, ${mbps} MB/s, ${state.shootingDays}d × ${cam.hoursPerDay}h/day)`;
+      }).join(' | ');
+      document.getElementById('cameraCalc').textContent = cameraCalcs;
+
+      // Raw calc - show hours detail with camera letters
+      const hoursDetail = state.cameras.map(cam => `${getLetter(cam.id)}@${cam.hoursPerDay}hr`).join(', ');
+      const audioDisplay = audioTB > 0 ? ` + ${audioTB.toFixed(2)} TB audio` : '';
+      document.getElementById('rawCalc').textContent = 
+        `${videoTB.toFixed(2)} TB video${audioDisplay} (${hoursDetail} × ${state.shootingDays} days)`;
+
+      // Redundant calc
+      document.getElementById('redundantCalc').textContent = 
+        `${rawTB.toFixed(2)} TB (raw) × 2 (GRAID redundancy)`;
+
+      // Render cameras - with columns for camera, type, resolution, codec, hours, mixer, delete
+      const cameraHtml = state.cameras.map(cam => {
+        const letter = getLetter(cam.id);
+        const validCodecs = specs.codecsByCamera[cam.type] || [];
+        const validResolutions = specs.resolutionsByCamera[cam.type] || [];
+        return `
+          <div class="camera-row" style="grid-template-columns: 40px 0.8fr 0.8fr 0.8fr 0.8fr 60px auto;">
+            <div class="camera-label">${letter}</div>
+            <select data-id="${cam.id}" class="camera-type" onchange="updateCamera(${cam.id}, 'type', this.value)">
+              ${Object.entries(specs.cameras).map(([k, v]) => 
+                `<option value="${k}" ${cam.type === k ? 'selected' : ''}>${v}</option>`
+              ).join('')}
+            </select>
+            <select data-id="${cam.id}" class="camera-resolution" onchange="updateCamera(${cam.id}, 'resolution', this.value)">
+              ${validResolutions.map(resKey => 
+                `<option value="${resKey}" ${cam.resolution === resKey ? 'selected' : ''}>${specs.resolutions[resKey]}</option>`
+              ).join('')}
+            </select>
+            <select data-id="${cam.id}" class="camera-codec" onchange="updateCamera(${cam.id}, 'codec', this.value)">
+              ${validCodecs.map(codecKey => 
+                `<option value="${codecKey}" ${cam.codec === codecKey ? 'selected' : ''}>${specs.codecNames[codecKey]}</option>`
+              ).join('')}
+            </select>
+            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+              <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px;">Hours/Day</div>
+              <div class="hours-input">
+                <input type="range" class="hours-slider" min="1" max="10" step="0.5" value="${cam.hoursPerDay}" data-id="${cam.id}" oninput="updateCamera(${cam.id}, 'hours', this.value)">
+                <span class="hours-value" data-id="${cam.id}">${parseFloat(cam.hoursPerDay).toFixed(1)}h</span>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.25rem; align-items: center;">
+              <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px;">Mixer</div>
+              <input type="checkbox" data-id="${cam.id}" ${cam.hasMixer ? 'checked' : ''} onchange="updateCamera(${cam.id}, 'mixer', this.checked)" style="width: 20px; height: 20px; cursor: pointer;">
+            </div>
+            ${state.cameras.length > 1 ? `<button class="delete-btn" onclick="deleteCamera(${cam.id})">🗑</button>` : '<div></div>'}
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('cameraList').innerHTML = cameraHtml;
+
+      // Recommendations
+      const shuttleCount = Math.ceil(rawTB / 16);
+      const shuttlePrice = shuttleCount * specs.prices.shuttle16;
+
+      const graidCount = Math.ceil(redundantTB / state.graidSize);
+      const graidPrice = graidCount * specs.prices[`graid${state.graidSize}`];
+
+      const recsHtml = `
+        <div class="rec-item">
+          <div class="rec-header">
+            <div class="rec-info">
+              <h3>${shuttleCount}× 16TB SSD Shuttles</h3>
+              <div class="calc-detail">${rawTB.toFixed(2)} TB ÷ 16 TB/drive = ${shuttleCount} drives</div>
+            </div>
+            <div class="rec-badge">Shuttle</div>
+          </div>
+          <div class="rec-stats">
+            <div class="rec-stat">
+              <div class="rec-stat-value">${(shuttleCount * 16).toLocaleString()}</div>
+              <div class="rec-stat-label">Total TB</div>
+            </div>
+            <div class="rec-stat">
+              <div class="rec-stat-value">$${shuttlePrice.toLocaleString()}</div>
+              <div class="rec-stat-label">Est. Cost</div>
+            </div>
+          </div>
+          <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <a href="https://eshop.macsales.com/item/OWC/TB5ULT4M2/" target="_blank" style="font-size: 0.85rem; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 0.4rem 0.75rem; border-radius: 4px; cursor: pointer;">OWC NVMe Enclosure</a>
+            <a href="https://www.amazon.com/Samsung-990-PRO-Solid-State/s?k=Samsung+990+PRO" target="_blank" style="font-size: 0.85rem; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 0.4rem 0.75rem; border-radius: 4px; cursor: pointer;">Samsung 990 PRO</a>
+          </div>
+        </div>
+
+        <div class="rec-item">
+          <div class="rec-header">
+            <div class="rec-info">
+              <h3>GRAID SHUTTLE8</h3>
+              <div class="graid-controls">
+                <label>Size:</label>
+                <select onchange="updateGRAIDSize(this.value)">
+                  <option value="32" ${state.graidSize === 32 ? 'selected' : ''}>32TB</option>
+                  <option value="64" ${state.graidSize === 64 ? 'selected' : ''}>64TB</option>
+                  <option value="96" ${state.graidSize === 96 ? 'selected' : ''}>96TB</option>
+                  <option value="160" ${state.graidSize === 160 ? 'selected' : ''}>160TB</option>
+                </select>
+              </div>
+              <div class="calc-detail">${redundantTB.toFixed(2)} TB ÷ ${state.graidSize} TB/drive = ${graidCount} drives (2x redundancy)</div>
+            </div>
+            <div class="rec-badge">GRAID</div>
+          </div>
+          <div class="rec-stats">
+            <div class="rec-stat">
+              <div class="rec-stat-value">${graidCount}× ${state.graidSize}TB</div>
+              <div class="rec-stat-label">Configuration</div>
+            </div>
+            <div class="rec-stat">
+              <div class="rec-stat-value">$${graidPrice.toLocaleString()}</div>
+              <div class="rec-stat-label">Est. Cost</div>
+            </div>
+          </div>
+          <div style="margin-top: 0.75rem;">
+            <a href="https://www.bhphotovideo.com/c/product/1956829-REG/g_drive_sdph48h_160t_nbaab_g_raid_shuttle_8_160tb.html" target="_blank" style="font-size: 0.85rem; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 0.4rem 0.75rem; border-radius: 4px; cursor: pointer;">B&H Photo</a>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('recs').innerHTML = recsHtml;
+    }
+
+    function updateCamera(id, field, value) {
+      const cam = state.cameras.find(c => c.id === id);
+      if (!cam) return;
+      if (field === 'hours') cam.hoursPerDay = parseFloat(value);
+      else if (field === 'type') {
+        cam.type = value;
+        // Reset to valid codec and resolution for this camera type
+        cam.codec = specs.codecsByCamera[value][0];
+        cam.resolution = specs.resolutionsByCamera[value][0];
+      }
+      else if (field === 'codec') cam.codec = value;
+      else if (field === 'resolution') cam.resolution = value;
+      else if (field === 'mixer') cam.hasMixer = value;
+      render();
+    }
+
+    function updateGRAIDSize(size) {
+      state.graidSize = parseInt(size);
+      render();
+    }
+
+    function deleteCamera(id) {
+      if (state.cameras.length > 1) {
+        state.cameras = state.cameras.filter(c => c.id !== id);
+        render();
+      }
+    }
+
+    function addCamera() {
+      state.cameras.push({
+        id: state.nextId++,
+        type: 'venice2',
+        resolution: '57k-169',
+        codec: 'xocn-lt',
+        hoursPerDay: 6,
+        hasMixer: true,
+      });
+      render();
+    }
+
+    const themeBtn = document.getElementById('themeBtn');
+    const html = document.documentElement;
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+
+    html.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'dark') themeBtn.classList.add('dark');
+
+    themeBtn.onclick = () => {
+      const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      themeBtn.classList.toggle('dark');
+    };
+
+    document.getElementById('daysSlider').oninput = (e) => {
+      state.shootingDays = parseInt(e.target.value);
+      render();
+    };
+
+    // Export PDF functionality
+    function exportPDF() {
+      // Create summary text
+      let summary = 'OPP SHOOT FOOTPRINT CALC\n\n';
+      summary += `SHOOT DURATION: ${state.shootingDays} days\n\n`;
+      
+      let htmlSummary = '<h1>OPP SHOOT FOOTPRINT CALC</h1>\n';
+      htmlSummary += `<p><strong>SHOOT DURATION:</strong> ${state.shootingDays} days</p>\n\n`;
+      
+      htmlSummary += '<h2>CAMERAS</h2>\n';
+      state.cameras.forEach((cam, idx) => {
+        const letter = getLetter(cam.id);
+        const videoTb = calcCameraStorage(cam).toFixed(3);
+        const audioTb = calcAudioStorage(cam).toFixed(3);
+        htmlSummary += `<p><strong>${letter}.</strong> ${specs.cameras[cam.type]} - ${specs.resolutions[cam.resolution]} @ ${specs.codecNames[cam.codec]}<br/>`;
+        htmlSummary += `Hours/day: ${cam.hoursPerDay}h | Mixer: ${cam.hasMixer ? 'Yes' : 'No'}<br/>`;
+        htmlSummary += `Storage: ${videoTb}TB video${cam.hasMixer ? ` + ${audioTb}TB audio` : ''}</p>\n`;
+      });
+
+      // Calculate totals
+      const storage = calcStorage();
+      const videoTB = storage.videoGB / 1024;
+      const audioTB = storage.audioGB / 1024;
+      const rawTB = storage.totalGB / 1024;
+      const redundantTB = rawTB * 2;
+
+      htmlSummary += '<h2>STORAGE SUMMARY</h2>\n';
+      htmlSummary += `<p><strong>Raw footage:</strong> ${rawTB.toFixed(2)}TB<br/>`;
+      htmlSummary += `<strong>With 2x redundancy:</strong> ${redundantTB.toFixed(2)}TB</p>\n\n`;
+
+      htmlSummary += '<h2>RECOMMENDED SOLUTIONS</h2>\n';
+      const shuttleCount = Math.ceil(rawTB / 16);
+      htmlSummary += `<p><strong>Shuttles (16TB each):</strong> ${shuttleCount} drives = ${shuttleCount * 16}TB total ($${(shuttleCount * specs.prices.shuttle16).toLocaleString()})<br/>`;
+      htmlSummary += `<a href="https://eshop.macsales.com/item/OWC/TB5ULT4M2/" target="_blank">OWC NVMe Enclosure</a> | <a href="https://www.amazon.com/Samsung-990-PRO-Solid-State/s?k=Samsung+990+PRO" target="_blank">Samsung 990 PRO</a></p>\n\n`;
+      
+      const graidCount = Math.ceil(redundantTB / state.graidSize);
+      const graidPrice = graidCount * specs.prices[`graid${state.graidSize}`];
+      htmlSummary += `<p><strong>GRAID ${state.graidSize}TB:</strong> ${graidCount} drives ($${graidPrice.toLocaleString()})<br/>`;
+      htmlSummary += `<a href="https://www.bhphotovideo.com/c/product/1956829-REG/g_drive_sdph48h_160t_nbaab_g_raid_shuttle_8_160tb.html" target="_blank">B&H Photo</a></p>`;
+
+      // Use browser's print dialog with HTML links
+      const printWindow = window.open('', '', 'height=600,width=800');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>OPP Shoot Footprint</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 2rem; line-height: 1.8; background: white; color: black; }
+              h1 { font-size: 28px; margin-bottom: 1.5rem; }
+              h2 { font-size: 18px; margin-top: 1.5rem; margin-bottom: 0.75rem; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+              p { margin: 0.5rem 0; }
+              a { color: #0066cc; text-decoration: underline; }
+            </style>
+          </head>
+          <body>
+            ${htmlSummary}
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+
+    document.getElementById('exportBtn').onclick = exportPDF;
+
+    render();
+  </script>
+</body>
+</html>
